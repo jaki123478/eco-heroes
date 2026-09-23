@@ -1164,6 +1164,9 @@
       // aspiratore (posa AIM, pulita) > walk (in movimento) > idle (fermo).
       ctx.imageSmoothingEnabled = true;
       const F = 96, cxp = x + w / 2;
+      // Dimensione grafica separata dal collider: il player resta 24x28,
+      // mentre lo sprite rimane leggibile e centrato come pixel-art.
+      const renderW = w * 2.1, renderH = h * 2.1;
       let key, nf, fi;
       if (game.victoryT > 0 && ready('tsVictory')) { key = 'tsVictory'; nf = 6; fi = Math.floor(now() * 0.009) % nf; }
       else if (p.vacuuming && p.walk === 0 && ready('tsAim')) { key = 'tsAim'; nf = 4; fi = Math.floor(now() * 0.006) % nf; }
@@ -1187,7 +1190,7 @@
       ctx.translate(cxp, y + h / 2);
       if (flip) ctx.scale(-1, 1);
       if (rot !== 0) ctx.rotate(rot);
-      ctx.drawImage(img, fi * F, 0, F, F, -w / 2, -h / 2, w, h);
+      ctx.drawImage(img, fi * F, 0, F, F, -renderW / 2, -renderH / 2, renderW, renderH);
       ctx.restore();
       ctx.imageSmoothingEnabled = false;
     }
