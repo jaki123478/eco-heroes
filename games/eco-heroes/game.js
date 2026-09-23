@@ -595,6 +595,16 @@
   function update(dt) {
     const p = game.player, a = axis();
     const vac = vacuumDown(); p.vacuuming = vac; setVacHum(vac);
+    // Il fascio deve puntare nella stessa direzione del movimento anche
+    // mentre l'aspiratore è premuto.
+    if (a.x || a.y) {
+      if (Math.abs(a.x) > Math.abs(a.y)) {
+        p.dir = a.x < 0 ? 2 : 3;
+        p.face = a.x < 0 ? -1 : 1;
+      } else {
+        p.dir = a.y < 0 ? 1 : 0;
+      }
+    }
     if (vac && (p.dir === 0 || p.dir === 1)) {
       p.dir = (p.face === -1) ? 2 : 3;
     }
@@ -1153,7 +1163,7 @@
       // NUOVO Tech-Scavenger (96x96, piedi y=95, centro-x 48). Stati: victory >
       // aspiratore (posa AIM, pulita) > walk (in movimento) > idle (fermo).
       ctx.imageSmoothingEnabled = true;
-      const F = 96, sc = (h * 1.92) / 92, fw2 = F * sc, cxp = x + w / 2;
+      const F = 96, sc = (h * 1.92) / 92, spriteScale = 0.86, fw2 = F * sc * spriteScale, cxp = x + w / 2;
       let key, nf, fi;
       if (game.victoryT > 0 && ready('tsVictory')) { key = 'tsVictory'; nf = 6; fi = Math.floor(now() * 0.009) % nf; }
       else if (p.vacuuming && p.walk === 0 && ready('tsAim')) { key = 'tsAim'; nf = 4; fi = Math.floor(now() * 0.006) % nf; }
@@ -1172,10 +1182,12 @@
       }
       
       ctx.save();
-      ctx.translate(cxp, y + h); // Perno piedi
+      // Centro stabile del player: il flip non sposta né taglia più il frame
+      // rivolto a sinistra.
+      ctx.translate(cxp, y + h / 2);
       if (flip) ctx.scale(-1, 1);
       if (rot !== 0) ctx.rotate(rot);
-      ctx.drawImage(img, fi * F, 0, F, F, -fw2 / 2, -95 * sc, fw2, fw2);
+      ctx.drawImage(img, fi * F, 0, F, F, -fw2 / 2, -fw2 / 2, fw2, fw2);
       ctx.restore();
       ctx.imageSmoothingEnabled = false;
     }
