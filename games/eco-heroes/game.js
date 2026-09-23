@@ -1219,6 +1219,10 @@
   function drawVacuum() {
     const p = game.player; if (!p.vacuuming) return;
     const f = facingVec(p.dir), ang = Math.atan2(f.y, f.x);
+    // Direzione unica del laser: l'angolo deriva sempre dalla direzione
+    // attuale del player, così il fascio non può restare orientato al frame
+    // precedente quando il personaggio cambia verso.
+    const laserDir = { x: Math.cos(ang), y: Math.sin(ang) };
     const nozzle = getNozzlePos();
     const pcx = cx(p) + nozzle.jx, pcy = cy(p) + nozzle.jy;
     const nx = nozzle.x, ny = nozzle.y;
@@ -1235,9 +1239,9 @@
     const nr = 9 + pulse * 5;
     
     // Raggio centrale curvo e pulsante (curved beam) + aloni laterali (vortex)
-    const tx = nx + f.x * range, ty = ny + f.y * range;
-    const ctrlX = nx + f.x * (range * 0.5) + Math.sin(now() / 150) * 15 * f.y;
-    const ctrlY = ny + f.y * (range * 0.5) - Math.sin(now() / 150) * 15 * f.x;
+    const tx = nx + laserDir.x * range, ty = ny + laserDir.y * range;
+    const ctrlX = nx + laserDir.x * (range * 0.5) + Math.sin(now() / 150) * 15 * laserDir.y;
+    const ctrlY = ny + laserDir.y * (range * 0.5) - Math.sin(now() / 150) * 15 * laserDir.x;
     
     ctx.save();
     ctx.globalCompositeOperation = 'lighter';
