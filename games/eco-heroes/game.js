@@ -595,18 +595,18 @@
   function update(dt) {
     const p = game.player, a = axis();
     const vac = vacuumDown(); p.vacuuming = vac; setVacHum(vac);
-    // Il fascio deve puntare nella stessa direzione del movimento anche
-    // mentre l'aspiratore è premuto.
+    // Aggiorna subito direzione (p.dir) e facing (p.face) appena il player si muove,
+    // garantendo che il laser e lo sprite seguano sempre fedelmente il movimento.
     if (a.x || a.y) {
       if (Math.abs(a.x) > Math.abs(a.y)) {
         p.dir = a.x < 0 ? 2 : 3;
-        p.face = a.x < 0 ? -1 : 1;
       } else {
         p.dir = a.y < 0 ? 1 : 0;
       }
-    }
-    if (vac && (p.dir === 0 || p.dir === 1)) {
-      p.dir = (p.face === -1) ? 2 : 3;
+      if (a.x) p.face = a.x < 0 ? -1 : 1;
+      p.walk += dt * 10;
+    } else {
+      p.walk = 0;
     }
     if (game.victoryT > 0) game.victoryT -= dt;
     const sp = CONFIG.PLAYER_SPEED * (vac ? CONFIG.VACUUM_SLOW : 1);
@@ -614,16 +614,6 @@
     if (vac) {
       const f0 = facingVec(p.dir);
       moveX(p, -f0.x * 16 * dt); moveY(p, -f0.y * 16 * dt); // Recoil fisico indietro
-    }
-    if (a.x || a.y) {
-      if (!vac) {
-        if (Math.abs(a.x) > Math.abs(a.y)) p.dir = a.x < 0 ? 2 : 3;
-        else p.dir = a.y < 0 ? 1 : 0;
-        if (a.x) p.face = a.x < 0 ? -1 : 1;
-      }
-      p.walk += dt * 10;
-    } else {
-      p.walk = 0;
     }
 
     if (game.invuln > 0) game.invuln -= dt;
