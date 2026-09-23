@@ -1078,10 +1078,6 @@
     // TELEGRAPH degli attacchi → vedi il colpo arrivare e puoi schivare (fair-play)
     if (b.atk === 'smash' && b.atkT < 0.46) {
       const wu = b.atkT / 0.46, R = b.enraged ? 118 : 96;                       // zona d'impatto dello smash
-      // Il collider può arrivare più vicino al bordo dello sprite grafico:
-      // limita il centro di disegno per non tagliare mai l'immagine.
-      const drawCx = clamp(cxp, renderW / 2, CONFIG.WIDTH - renderW / 2);
-      const drawCy = clamp(y + h / 2, renderH / 2, CONFIG.HEIGHT - renderH / 2);
       ctx.save();
       ctx.strokeStyle = 'rgba(255,90,90,' + (0.3 + 0.4 * wu).toFixed(2) + ')'; ctx.lineWidth = 2;
       ctx.beginPath(); ctx.ellipse(baseX, baseY - 2, R, R * 0.42, 0, 0, 6.283); ctx.stroke();
@@ -1171,6 +1167,10 @@
       // Dimensione grafica separata dal collider: il player resta 24x28,
       // mentre lo sprite rimane leggibile e centrato come pixel-art.
       const renderW = w * 2.1, renderH = h * 2.1;
+      // Il collider può arrivare più vicino al bordo dello sprite grafico:
+      // limita il centro di disegno per non tagliare mai l'immagine.
+      const drawCx = clamp(cxp, renderW / 2, CONFIG.WIDTH - renderW / 2);
+      const drawCy = clamp(y + h / 2, renderH / 2, CONFIG.HEIGHT - renderH / 2);
       let key, nf, fi;
       if (game.victoryT > 0 && ready('tsVictory')) { key = 'tsVictory'; nf = 6; fi = Math.floor(now() * 0.009) % nf; }
       else if (p.vacuuming && p.walk === 0 && ready('tsAim')) { key = 'tsAim'; nf = 4; fi = Math.floor(now() * 0.006) % nf; }
