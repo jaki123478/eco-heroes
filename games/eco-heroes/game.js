@@ -1163,7 +1163,7 @@
       // NUOVO Tech-Scavenger (96x96, piedi y=95, centro-x 48). Stati: victory >
       // aspiratore (posa AIM, pulita) > walk (in movimento) > idle (fermo).
       ctx.imageSmoothingEnabled = true;
-      const F = 96, sc = (h * 1.92) / 92, spriteScale = 0.86, fw2 = F * sc * spriteScale, cxp = x + w / 2;
+      const F = 96, cxp = x + w / 2;
       let key, nf, fi;
       if (game.victoryT > 0 && ready('tsVictory')) { key = 'tsVictory'; nf = 6; fi = Math.floor(now() * 0.009) % nf; }
       else if (p.vacuuming && p.walk === 0 && ready('tsAim')) { key = 'tsAim'; nf = 4; fi = Math.floor(now() * 0.006) % nf; }
@@ -1187,7 +1187,7 @@
       ctx.translate(cxp, y + h / 2);
       if (flip) ctx.scale(-1, 1);
       if (rot !== 0) ctx.rotate(rot);
-      ctx.drawImage(img, fi * F, 0, F, F, -fw2 / 2, -fw2 / 2, fw2, fw2);
+      ctx.drawImage(img, fi * F, 0, F, F, -w / 2, -h / 2, w, h);
       ctx.restore();
       ctx.imageSmoothingEnabled = false;
     }
