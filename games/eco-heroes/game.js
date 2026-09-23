@@ -1078,6 +1078,10 @@
     // TELEGRAPH degli attacchi → vedi il colpo arrivare e puoi schivare (fair-play)
     if (b.atk === 'smash' && b.atkT < 0.46) {
       const wu = b.atkT / 0.46, R = b.enraged ? 118 : 96;                       // zona d'impatto dello smash
+      // Il collider può arrivare più vicino al bordo dello sprite grafico:
+      // limita il centro di disegno per non tagliare mai l'immagine.
+      const drawCx = clamp(cxp, renderW / 2, CONFIG.WIDTH - renderW / 2);
+      const drawCy = clamp(y + h / 2, renderH / 2, CONFIG.HEIGHT - renderH / 2);
       ctx.save();
       ctx.strokeStyle = 'rgba(255,90,90,' + (0.3 + 0.4 * wu).toFixed(2) + ')'; ctx.lineWidth = 2;
       ctx.beginPath(); ctx.ellipse(baseX, baseY - 2, R, R * 0.42, 0, 0, 6.283); ctx.stroke();
@@ -1187,7 +1191,7 @@
       ctx.save();
       // Centro stabile del player: il flip non sposta né taglia più il frame
       // rivolto a sinistra.
-      ctx.translate(cxp, y + h / 2);
+      ctx.translate(drawCx, drawCy);
       if (flip) ctx.scale(-1, 1);
       if (rot !== 0) ctx.rotate(rot);
       ctx.drawImage(img, fi * F, 0, F, F, -renderW / 2, -renderH / 2, renderW, renderH);
