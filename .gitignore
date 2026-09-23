@@ -1,0 +1,29 @@
+# Dipendenze Node.js
+node_modules/
+
+# File di ambiente (CONTENGONO CREDENZIALI!)
+.env
+.env.*
+!.env.example
+ecoheroes.env
+
+# Backup server (contiene .env, dump DB con dati personali)
+server-backup/
+scan-service/.cache/
+tts-service/.cache/
+
+# DB locale
+.mariadb/
+
+# Log
+*.log
+logs/
+npm-debug.log*
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+
+# Build
+dist/
+build/

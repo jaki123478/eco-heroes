@@ -1,0 +1,19 @@
+# Override cache per sprite Tech-Scavenger: NO immutable perché vengono aggiornati frequentemente.
+# Questo evita che il browser memorizzi errori di caricamento per 1 anno.
+<IfModule mod_headers.c>
+    <FilesMatch "\.(png|jpg|jpeg|gif|webp)$">
+        Header set Cache-Control "public, max-age=3600, must-revalidate"
+        Header unset Pragma
+    </FilesMatch>
+</IfModule>
+
+# Assicura che tutti i PNG siano serviti correttamente
+<FilesMatch "\.png$">
+    ForceType image/png
+</FilesMatch>
+
+# Disabilita il redirect WebP per questi sprite (non esistono versioni .webp)
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteRule ^(.*)\.png$ $1.png [L,NC]
+</IfModule>

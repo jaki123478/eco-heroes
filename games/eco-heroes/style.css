@@ -1,0 +1,145 @@
+/* ===========================================================================
+ *  Eco-Heroes: Pixel Quest — stile pagina, HUD, overlay e canvas pixel-perfect.
+ *  Canvas a risoluzione INTERNA fissa 640x480, scalato responsive via CSS.
+ *  Nessuna dipendenza esterna.
+ * ======================================================================== */
+:root {
+  --bg: #0a1a12; --bg2: #102a1c; --panel: #16241c;
+  --green: #55efc4; --green2: #2fbf63; --green-dark: #00b894;
+  --lens: #5cf2ff; --danger: #ff6b6b;
+  --ink: #f3fff8; --muted: #9fd9bd;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body {
+  background: radial-gradient(120% 120% at 50% 0%, var(--bg2) 0%, var(--bg) 60%, #060f0a 100%);
+  color: var(--ink);
+  font-family: "Courier New", Courier, monospace;
+  min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column; align-items: center;
+  padding: env(safe-area-inset-top) 12px calc(env(safe-area-inset-bottom) + 12px);
+  -webkit-user-select: none; user-select: none; touch-action: manipulation; overscroll-behavior: none;
+  -webkit-tap-highlight-color: transparent; -webkit-touch-callout: none; -webkit-text-size-adjust: 100%; text-size-adjust: 100%;
+}
+.pq-wrap { width: 100%; max-width: 900px; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+
+/* Header */
+.pq-head { width: 100%; display: flex; align-items: center; gap: 12px; padding-top: 8px; }
+.pq-back { color: var(--ink); text-decoration: none; font-weight: 700; font-size: 14px;
+  background: rgba(255,255,255,.07); border: 1px solid rgba(85,239,196,.3); padding: 8px 12px; border-radius: 10px; white-space: nowrap; }
+.pq-back:hover { background: rgba(85,239,196,.18); }
+.pq-title { margin: 0; font-size: 18px; font-weight: 800; letter-spacing: .5px; color: var(--green); text-shadow: 0 0 12px rgba(85,239,196,.35); }
+.pq-title span { color: var(--lens); }
+
+/* HUD */
+.pq-hud { width: 100%; display: flex; flex-wrap: wrap; gap: 8px; }
+.pq-box { flex: 1 1 auto; min-width: 92px; display: flex; flex-direction: column; gap: 2px;
+  background: rgba(22,36,28,.92); border: 2px solid rgba(85,239,196,.35); border-radius: 10px;
+  padding: 7px 10px; box-shadow: 0 0 14px rgba(0,184,148,.12); }
+.pq-box span { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
+.pq-box b { font-size: 18px; color: var(--green); }
+.pq-box--energy { flex: 2 1 180px; }
+.pq-box--energy span { color: var(--muted); }
+.pq-box--energy span b { color: var(--green); font-size: 13px; }
+.pq-energy { margin-top: 4px; height: 10px; background: #0c1f16; border-radius: 6px; overflow: hidden; border: 1px solid rgba(85,239,196,.25); }
+.pq-energy-fill { height: 100%; width: 100%; background: linear-gradient(90deg, #2fbf63, #7dff9a); transition: width .15s linear, background .2s; }
+
+/* Stage + canvas */
+.pq-stage { position: relative; width: 100%; display: flex; justify-content: center; }
+#game-canvas {
+  width: min(96vw, 820px); aspect-ratio: 4 / 3; height: auto;
+  image-rendering: -webkit-optimize-contrast; image-rendering: pixelated; image-rendering: crisp-edges;
+  background: #0a1a12; border: 3px solid #123b2a; border-radius: 12px;
+  box-shadow: 0 12px 34px rgba(0,0,0,.55), inset 0 0 0 2px rgba(92,242,255,.1); touch-action: none;
+}
+
+/* Overlay (start / game over) sopra il canvas */
+.pq-overlay { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  background: rgba(6,15,10,.74); border-radius: 12px; padding: 18px; text-align: center; }
+.pq-overlay.hidden { display: none; }
+.pq-panel { max-width: 520px; background: rgba(22,36,28,.97); border: 3px solid var(--green); border-radius: 14px;
+  padding: 20px 22px; box-shadow: 0 0 34px rgba(85,239,196,.25); }
+.pq-panel h1 { margin: 0 0 10px; color: var(--green); font-size: clamp(1.3rem, 4vw, 1.7rem); }
+.pq-panel h1.over { color: var(--danger); }
+.pq-panel p { color: var(--muted); line-height: 1.45; margin: 8px 0; font-size: 13.5px; }
+.pq-panel p.big { color: var(--ink); font-size: 15px; }
+.pq-panel p.big b { color: var(--green); }
+.pq-panel p.rec { color: var(--lens); }
+.pq-panel .pq-keys { color: var(--ink); }
+.pq-start { margin-top: 14px; border: 0; background: var(--green-dark); color: #07120f; font-weight: 800; font-family: inherit;
+  font-size: 15px; padding: 12px 20px; border-radius: 10px; cursor: pointer; box-shadow: 0 4px 0 #007f68; transition: transform .08s, box-shadow .08s; }
+.pq-start:active { transform: translateY(4px); box-shadow: 0 0 0 #007f68; }
+
+.pq-hint { color: var(--muted); font-size: 12.5px; text-align: center; margin: 2px 0 0; max-width: 580px; }
+.pq-hint b { color: #c79bff; }
+
+/* Controlli touch */
+.pq-touch { display: none; width: 100%; justify-content: space-between; align-items: flex-end; margin-top: 6px; gap: 12px; }
+.pq-touch.visible { display: flex; }
+@media (pointer: coarse) { .pq-touch { display: flex; } }
+.pq-dpad { display: grid; grid-template-columns: repeat(3, 56px); grid-template-rows: repeat(3, 56px); gap: 6px; }
+.pq-btn { -webkit-appearance: none; appearance: none; color: var(--green);
+  background: rgba(22,36,28,.92); border: 2px solid rgba(85,239,196,.4); border-radius: 12px;
+  font-size: 20px; font-weight: 800; display: flex; align-items: center; justify-content: center; touch-action: none; }
+.pq-btn:active { background: rgba(47,191,99,.4); }
+.pq-btn.up { grid-column: 2; grid-row: 1; }
+.pq-btn.left { grid-column: 1; grid-row: 2; }
+.pq-btn.right { grid-column: 3; grid-row: 2; }
+.pq-btn.down { grid-column: 2; grid-row: 3; }
+.pq-action { -webkit-appearance: none; appearance: none; border: none; color: #04121f; align-self: center;
+  width: 76px; height: 76px; border-radius: 50%; background: var(--lens); font-size: 30px; font-weight: 900;
+  box-shadow: 0 6px 0 #1c7fb0; touch-action: none; }
+.pq-action:active { transform: translateY(3px); box-shadow: 0 3px 0 #1c7fb0; }
+
+@media (max-width: 480px) {
+  .pq-title { font-size: 15px; }
+  .pq-box b { font-size: 16px; }
+  .pq-dpad { grid-template-columns: repeat(3, 50px); grid-template-rows: repeat(3, 50px); }
+}
+
+/* ===========================================================================
+ *  OTTIMIZZAZIONE MOBILE / TABLET (Android phone+tablet, iPhone, iPad)
+ *  Il gioco RIEMPIE il viewport mantenendo il 4:3 (vincolato sia in larghezza
+ *  sia in ALTEZZA → niente sforamento in orizzontale), i controlli flottano
+ *  negli angoli (non rubano spazio), safe-area iPhone, niente scroll/zoom.
+ * ======================================================================== */
+@media (pointer: coarse) {
+  html, body { height: 100%; }
+  body { overflow: hidden; }
+  .pq-wrap { height: 100vh; height: 100dvh; height: 100svh; justify-content: flex-start; gap: 6px; }
+  .pq-head { padding-top: 2px; }
+  .pq-title { font-size: 15px; }
+  .pq-hint { display: none; }                       /* libera spazio verticale */
+  .pq-panel p.pq-keys { display: none; }            /* su touch non servono i tasti */
+  .pq-hud { gap: 6px; }
+  .pq-box { padding: 5px 8px; min-width: 70px; }
+  .pq-box b { font-size: 15px; }
+  /* canvas: si adatta allo spazio disponibile mantenendo l'aspetto 4:3 */
+  .pq-stage { flex: 1 1 auto; min-height: 0; align-items: center; }
+  #game-canvas { width: auto; height: auto; max-width: 100%; max-height: 100%; }
+  /* D-pad e tasto azione FLOTTANTI negli angoli inferiori, con safe-area */
+  .pq-touch, .pq-touch.visible { position: fixed; left: 0; right: 0; bottom: 0; top: auto; margin: 0; z-index: 40;
+    pointer-events: none; align-items: flex-end;
+    padding: 0 calc(env(safe-area-inset-right) + 12px) calc(env(safe-area-inset-bottom) + 12px) calc(env(safe-area-inset-left) + 12px); }
+  .pq-dpad, .pq-action { pointer-events: auto; }    /* solo i tasti catturano i tocchi; il resto passa al gioco */
+  .pq-dpad { opacity: .92; }
+  .pq-action { align-self: flex-end; opacity: .94; }
+}
+/* iPhone / Android in ORIZZONTALE basso → massimo spazio al gioco */
+@media (pointer: coarse) and (orientation: landscape) and (max-height: 480px) {
+  .pq-head { padding-top: 0; }
+  .pq-title { display: none; }                      /* resta il tasto "‹ Giochi" */
+  .pq-hud { gap: 5px; }
+  .pq-box { min-width: 0; padding: 3px 7px; }
+  .pq-box span { font-size: 9px; letter-spacing: 0; }
+  .pq-box b { font-size: 13px; }
+  .pq-box--energy { flex: 2 1 120px; }
+  .pq-dpad { grid-template-columns: repeat(3, 46px); grid-template-rows: repeat(3, 46px); }
+  .pq-action { width: 64px; height: 64px; }
+}
+/* Hint "ruota il telefono" (solo su SMARTPHONE in verticale; non sui tablet) */
+.pq-rotate { display: none; position: absolute; top: 8px; left: 50%; transform: translateX(-50%); z-index: 25;
+  background: rgba(6,15,10,.82); color: var(--lens); border: 1px solid rgba(92,242,255,.4); border-radius: 999px;
+  padding: 5px 12px; font-size: 12px; font-weight: 700; pointer-events: none; white-space: nowrap; }
+@media (pointer: coarse) and (orientation: portrait) and (max-width: 560px) {
+  .pq-rotate { display: block; }
+}

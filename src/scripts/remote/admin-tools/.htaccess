@@ -1,0 +1,16 @@
+# Eco-Hero Admin Tools - hardening
+Options -Indexes -MultiViews
+DirectoryIndex index.php
+
+# blocca dotfile e file di codice non-php
+<FilesMatch "(^\.|\.bak$|\.swp$)">
+    Require all denied
+</FilesMatch>
+
+# Forza no-cache (tool admin, dati sensibili)
+<IfModule mod_headers.c>
+    Header set Cache-Control "no-store, no-cache, must-revalidate, max-age=0"
+    Header set Pragma "no-cache"
+    Header set X-Robots-Tag "noindex, nofollow"
+    Header set X-Frame-Options "SAMEORIGIN"
+</IfModule>

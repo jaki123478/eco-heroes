@@ -1,0 +1,24 @@
+{
+  "name": "ecoheroes",
+  "version": "1.0.0",
+  "description": "EcoHeroes - Backend Node.js con FTP e MySQL",
+  "main": "src/app.js",
+  "scripts": {
+    "start": "node src/app.js",
+    "dev": "nodemon src/app.js",
+    "test:db": "node src/config/db.js",
+    "test:ftp": "node src/config/ftp.js"
+  },
+  "dependencies": {
+    "basic-ftp": "^5.0.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.19.2",
+    "mysql2": "^3.9.8",
+    "pdf-parse": "^2.4.5",
+    "puppeteer": "^25.1.0"
+  },
+  "devDependencies": {
+    "javascript-obfuscator": "^5.4.3",
+    "nodemon": "^3.1.4"
+  }
+}

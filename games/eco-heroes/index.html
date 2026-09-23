@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+  <meta name="theme-color" content="#0a1a12">
+  <meta name="description" content="Eco-Heroes: Pixel Quest — mini-gioco 2D top-down. Vesti il Tech-Scavenger, aspira i rifiuti e ripulisci la città dallo smog tossico.">
+  <!-- PWA / fullscreen su iPhone-iPad-Android quando aggiunto alla home -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Pixel Quest">
+  <meta name="format-detection" content="telephone=no">
+  <title>Eco-Heroes: Pixel Quest</title>
+  <link rel="stylesheet" href="style.css?v=4">
+</head>
+<body>
+  <main class="pq-wrap">
+    <header class="pq-head">
+      <a class="pq-back" href="/app#games">&#8249; Giochi</a>
+      <div class="pq-title">Eco-Heroes: <span>Pixel Quest</span></div>
+    </header>
+
+    <!-- HUD -->
+    <div class="pq-hud">
+      <div class="pq-box"><span>Eco-Punti</span><b id="score">0</b></div>
+      <div class="pq-box"><span>Livello</span><b id="level">1</b></div>
+      <div class="pq-box"><span>Rifiuti</span><b id="trash-left">0</b></div>
+      <div class="pq-box pq-box--energy">
+        <span>Energia <b id="energy">100</b>%</span>
+        <div class="pq-energy"><div id="energy-bar" class="pq-energy-fill"></div></div>
+      </div>
+    </div>
+
+    <!-- Area di gioco: canvas 640x480 interno fisso + overlay HTML -->
+    <div class="pq-stage">
+      <canvas id="game-canvas" width="640" height="480" aria-label="Eco-Heroes Pixel Quest"></canvas>
+      <div class="pq-rotate" aria-hidden="true">&#8635; Meglio in orizzontale</div>
+
+      <div id="overlay" class="pq-overlay">
+        <div class="pq-panel">
+          <h1>Eco-Heroes</h1>
+          <p>Sei un <b>Tech-Scavenger</b> con uno zaino che aspira rifiuti e smog. Attraversa il parco eco, supera il ruscello sui ponti e bonifica la <b>zona tossica</b>.</p>
+          <p>Raccogli <b>tutti i rifiuti</b> per salire di livello. <b>Aspira</b> (Spazio) per risucchiarli a distanza e <b>dissolvere lo smog</b>. Ogni 3 livelli arriva un <b>BOSS</b>.</p>
+          <p class="pq-keys">Muoviti con <b>WASD</b>/<b>frecce</b> &middot; <b>Spazio</b> = aspiratore &middot; su mobile D-pad + tasto <b>&#9673;</b>.</p>
+          <button id="start-btn" class="pq-start">Inizia missione</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Controlli touch (mostrati su dispositivi touch) -->
+    <div class="pq-touch" id="touch-controls" aria-hidden="true">
+      <div class="pq-dpad" role="group" aria-label="Movimento">
+        <button type="button" class="pq-btn up"    data-dir="up"    aria-label="Su">&#9650;</button>
+        <button type="button" class="pq-btn left"  data-dir="left"  aria-label="Sinistra">&#9664;</button>
+        <button type="button" class="pq-btn right" data-dir="right" aria-label="Destra">&#9654;</button>
+        <button type="button" class="pq-btn down"  data-dir="down"  aria-label="Giù">&#9660;</button>
+      </div>
+      <button type="button" class="pq-action" id="touch-action" aria-label="Aspira">&#9673;</button>
+    </div>
+
+    <p class="pq-hint">Suggerimento: non restare nella <b>melma viola</b> — drena energia. Raccogli i rifiuti per recuperarne un po'.</p>
+  </main>
+
+  <script src="dialogueVoice.js?v=3"></script>
+  <script src="game.js?v=84"></script>
+</body>
+</html>
