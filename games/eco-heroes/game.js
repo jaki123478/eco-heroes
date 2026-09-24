@@ -949,7 +949,7 @@
     const ox = b.x, oy = b.y;
     if (d > 74) { moveX(b, (dx / d) * b.speed * dt); moveY(b, (dy / d) * b.speed * dt); } // insegue (si ferma se addosso)
     const moved = Math.hypot(b.x - ox, b.y - oy);
-    b.walk = (b.walk || 0) + moved * 0.34;                              // fase passo ∝ cammino reale
+    b.walk = (b.walk || 0) + moved * 0.62;                              // GROUND_WALK_v135: passo piu leggibile
     const mvTarget = Math.min(1, moved / (b.speed * dt + 1e-4));
     b.mv = (b.mv || 0) + (mvTarget - (b.mv || 0)) * Math.min(1, dt * 8);
     if (dx < -2) b.face = -1; else if (dx > 2) b.face = 1;
@@ -1203,36 +1203,36 @@
   function drawSmog(s) { const pulse = 1 + Math.sin(s.t * 6) * 0.07, w = s.w * pulse, h = s.h * pulse, x = s.x + (s.w - w) / 2, y = s.y + (s.h - h) / 2; ctx.fillStyle = C.gooGlow; ctx.fillRect(s.x - 2, s.y - 2, s.w + 4, s.h + 4); if (ready('smog')) { ctx.drawImage(sprites.smog.img, x - 4, y - 5, w + 8, h + 8); return; } ctx.fillStyle = C.shadow; ctx.fillRect(s.x + 3, s.y + s.h - 2, s.w - 6, 3); ctx.fillStyle = C.smogLo; ctx.fillRect(x + 2, y + 6, w - 4, h - 8); ctx.fillRect(x + 6, y + 2, w - 12, h - 4); ctx.fillStyle = C.smog; ctx.fillRect(x + 4, y + 5, w - 10, h - 9); ctx.fillStyle = C.smogHi; ctx.fillRect(x + 6, y + 6, 5, 3); ctx.fillStyle = C.smogEye; ctx.fillRect(x + 7, y + 10, 4, 4); ctx.fillRect(x + w - 11, y + 10, 4, 4); ctx.fillStyle = C.ink; ctx.fillRect(x + 8, y + 11, 2, 2); ctx.fillRect(x + w - 10, y + 11, 2, 2); }
   function drawBoss(time) {
     const b = game.boss; if (!b || b.dead) return;
-    // Golem VIVO: FLAT_WALK_v133 — Y costante (zero bob), squash solo orizzontale, lean,
-    // anticipazione/impatto attacchi, tremolio metallico) + nucleo viola pulsante.
-    // Mai "faccia"/dettagli disegnati sopra l'arte: solo trasformazioni e luce additiva.
+    // GROUND_WALK_v135: piedi SEMPRE a terra. Causa hop residuo v133 = smash windup
+    // alzava sy (>1) con ancora ai piedi → stretch verso l'alto ogni ~2s = "salta".
+    // Camminata leggibile = squash X + lean + shear + stride piedi; sy mai > 1.
     const baseX = b.x + b.w / 2, baseY = b.y + b.h;
     const mv = b.mv || 0, ph = b.walk || 0, cast = Math.max(0, b.cast || 0), face = b.face || 1;
     const hitK = b.hit > 0 ? Math.min(1, b.hit / 0.1) : 0;
-    // FLAT_WALK_v133: Y costante sul suolo — zero bob/lift/hop verticale in camminata.
-    // Solo micro-squash ORIZZONTALE sul passo (i piedi restano piantati; niente sy oscillante).
-    const step = Math.abs(Math.sin(ph));                                        // 0..1 ciclo passo
-    const plant = step * step;                                                  // peso sul piede a terra
-    let sx = 1 + plant * 0.04 * mv + cast * 0.08;                                // allarga leggermente quando pesta
-    let sy = 1 + cast * 0.04 + (1 - mv) * Math.sin(b.t * 2) * 0.008;             // no squash verticale in walk; respiro idle minimo
-    let rot = 0;                                                                // NIENTE rotazione
-    let bob = 0;                                                                // FLAT_WALK_v133: mai sollevare lo sprite
-    let dxs = -face * hitK * 3;                                                 // solo rinculo orizzontale al colpo
-    // smash/sludge: solo scale a terra (nessun bob/lift)
+    const gait = Math.sin(ph);                                              // -1..1 ciclo passo
+    const plant = gait * gait;                                              // 0..1 peso sul suolo
+    let sx = 1 + plant * 0.11 * mv + cast * 0.06;                            // allarga quando pesta
+    let sy = 1;                                                             // LOCK: mai stretch verticale in chase
+    let rot = face * gait * 0.06 * mv;                                      // lean laterale (peso), non hop
+    const shear = -face * gait * 0.09 * mv;                                  // stride/weight-shift orizzontale
+    let bob = 0;                                                            // MAI sollevare lo sprite
+    let dxs = -face * hitK * 3;                                             // solo rinculo orizzontale al colpo
+    // Smash = stomp a terra: crouch (sy GIÙ) → impatto (squash). Mai sy>1 = niente salto.
     if (b.atk === 'smash') {
       const wu = Math.min(1, b.atkT / 0.46), hh = Math.max(0, 1 - (b.atkT - 0.46) / 0.28);
-      if (b.atkT < 0.46) { sy += 0.06 * wu; sx -= 0.03 * wu; }                   // windup: scale only
-      else { sy -= 0.14 * hh; sx += 0.12 * hh; }                                 // impatto: schiaccia a terra, Y fissa
+      rot = 0;
+      if (b.atkT < 0.46) { sy = 1 - 0.12 * wu; sx = 1 + 0.10 * wu; }        // carica: accovaccia a terra
+      else { sy = 1 - 0.20 * hh; sx = 1 + 0.18 * hh; }                       // impatto: schiaccia a terra
     } else if (b.atk === 'sludge') {
       const wu = Math.sin(Math.min(1, b.atkT / 0.38) * Math.PI);
-      sx += 0.05 * wu; sy += 0.03 * wu;
+      sx = 1 + 0.06 * wu; sy = 1; rot = 0;                                   // mira: solo gonfia X
     }
 
-    // ombra fissa sotto i piedi (allineata allo sprite, mai staccata)
-    const shW = b.w - 8;
+    // ombra fissa sotto i piedi (allargata sul plant = contatto continuo col suolo)
+    const shW = (b.w - 8) + plant * 6 * mv;
     ctx.fillStyle = C.shadow; ctx.fillRect(baseX - shW / 2, baseY - 3, shW, 5);
 
-    // TELEGRAPH degli attacchi → vedi il colpo arrivare e puoi schivare (fair-play)
+    // TELEGRAPH degli attacchi — vedi il colpo arrivare e puoi schivare (fair-play)
     if (b.atk === 'smash' && b.atkT < 0.46) {
       const wu = b.atkT / 0.46, R = b.enraged ? 118 : 96;                       // zona d'impatto dello smash
       ctx.save();
@@ -1271,9 +1271,11 @@
       ctx.imageSmoothingEnabled = true;
       ctx.translate(baseX + dxs, baseY + bob);
       ctx.rotate(rot);
+      // shear orizzontale (matrix): sposta il peso L/R senza alzare Y
+      ctx.transform(1, 0, shear, 1, 0, 0);
       ctx.scale(sx, sy);
       ctx.drawImage(sprites.boss.img, -bw / 2, -bh, bw, bh);
-      // LUCE del nucleo: additiva SOPRA il nucleo dipinto (centro misurato 46%/53%) → lo fa pulsare senza coprirlo
+      // LUCE del nucleo: additiva SOPRA il nucleo dipinto (centro misurato 46%/53%) — lo fa pulsare senza coprirlo
       const coreLX = -0.039 * bw, coreLY = -0.472 * bh, cr = bw * 0.2 * (0.85 + 0.3 * Math.sin(b.t * (b.enraged ? 7 : 4)));
       const coreC = b.enraged ? '235,90,215' : '200,120,255';
       ctx.globalCompositeOperation = 'lighter';
@@ -1288,10 +1290,24 @@
       ctx.globalAlpha = 1;
       if (hitK > 0) { ctx.globalAlpha = hitK * 0.55; ctx.drawImage(sprites.boss.img, -bw / 2, -bh, bw, bh); } // flash danno sulla silhouette
       ctx.restore();
+
+      // Piastre-piedi alternate (bordo inferiore): vendono il passo senza lift del torso
+      if (mv > 0.12 && !b.atk) {
+        const stride = 6 * mv;
+        const lFwd = Math.max(0, gait) * stride;
+        const rFwd = Math.max(0, -gait) * stride;
+        const fy = baseY - 1;
+        ctx.fillStyle = 'rgba(55,48,62,0.85)';
+        ctx.fillRect(baseX - 20 - face * lFwd, fy - 2, 14, 4);
+        ctx.fillRect(baseX + 6 + face * rFwd, fy - 2, 14, 4);
+        ctx.fillStyle = 'rgba(120,110,130,0.55)';
+        ctx.fillRect(baseX - 18 - face * lFwd, fy - 1, 10, 2);
+        ctx.fillRect(baseX + 8 + face * rFwd, fy - 1, 10, 2);
+      }
       return;
     }
-    // fallback procedurale (sprite non ancora caricato)
-    const pulse = 1 + Math.sin(b.t * 4) * 0.05, w = b.w * pulse, h = b.h * pulse, x = b.x + (b.w - w) / 2, y = b.y + (b.h - h) / 2;
+    // fallback procedurale (sprite non ancora caricato) — flat, no bob
+    const w = b.w, h = b.h, x = b.x, y = b.y;
     ctx.fillStyle = C.gooGlow; ctx.fillRect(b.x - 6, b.y - 6, b.w + 12, b.h + 12);
     ctx.fillStyle = b.hit > 0 ? '#ffffff' : C.bossLo; ctx.fillRect(x + 4, y + 10, w - 8, h - 14); ctx.fillRect(x + 10, y + 4, w - 20, h - 8);
     if (b.hit <= 0) { ctx.fillStyle = C.boss; ctx.fillRect(x + 8, y + 12, w - 16, h - 20); ctx.fillStyle = C.bossHi; ctx.fillRect(x + 12, y + 14, 10, 5); }
