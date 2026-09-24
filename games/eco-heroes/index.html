@@ -12,7 +12,7 @@
   <meta name="apple-mobile-web-app-title" content="Pixel Quest">
   <meta name="format-detection" content="telephone=no">
   <title>Eco-Heroes: Pixel Quest</title>
-  <link rel="stylesheet" href="style.css?v=4">
+  <link rel="stylesheet" href="style.css?v=7">
 </head>
 <body>
   <main class="pq-wrap">
@@ -30,6 +30,10 @@
         <span>Energia <b id="energy">100</b>%</span>
         <div class="pq-energy"><div id="energy-bar" class="pq-energy-fill"></div></div>
       </div>
+      <button type="button" id="eco-eye-toggle" class="eco-eye-toggle" aria-pressed="false" title="Controllo oculare">
+        <span class="eco-eye-toggle-lab">Controllo oculare</span>
+        <b>&#128065;</b>
+      </button>
     </div>
 
     <!-- Area di gioco: canvas 640x480 interno fisso + overlay HTML -->
@@ -42,7 +46,7 @@
           <h1>Eco-Heroes</h1>
           <p>Sei un <b>Tech-Scavenger</b> con uno zaino che aspira rifiuti e smog. Attraversa il parco eco, supera il ruscello sui ponti e bonifica la <b>zona tossica</b>.</p>
           <p>Raccogli <b>tutti i rifiuti</b> per salire di livello. <b>Aspira</b> (Spazio) per risucchiarli a distanza e <b>dissolvere lo smog</b>. Ogni 3 livelli arriva un <b>BOSS</b>.</p>
-          <p class="pq-keys">Muoviti con <b>WASD</b>/<b>frecce</b> &middot; <b>Spazio</b> = aspiratore &middot; su mobile D-pad + tasto <b>&#9673;</b>.</p>
+          <p class="pq-keys">Muoviti con <b>WASD</b>/<b>frecce</b> &middot; <b>Spazio</b> = aspiratore &middot; su mobile D-pad + tasto <b>&#9673;</b> &middot; <b>Controllo oculare</b> nel HUD.</p>
           <button id="start-btn" class="pq-start">Inizia missione</button>
         </div>
       </div>
@@ -62,7 +66,9 @@
     <p class="pq-hint">Suggerimento: non restare nella <b>melma viola</b> — drena energia. Raccogli i rifiuti per recuperarne un po'.</p>
   </main>
 
-  <script src="dialogueVoice.js?v=3"></script>
-  <script src="game.js?v=90"></script>
+  <script src="voices-manifest.js?v=1"></script>
+  <script src="dialogueVoice.js?v=4"></script>
+  <script src="eyeControl.js?v=2"></script>
+  <script src="game.js?v=130"></script>
 </body>
 </html>

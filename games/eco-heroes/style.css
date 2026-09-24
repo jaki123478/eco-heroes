@@ -1,3 +1,4 @@
+/* canvas-clip-fix: border-radius moved off canvas to avoid sprite edge clipping */
 /* ===========================================================================
  *  Eco-Heroes: Pixel Quest — stile pagina, HUD, overlay e canvas pixel-perfect.
  *  Canvas a risoluzione INTERNA fissa 640x480, scalato responsive via CSS.
@@ -48,7 +49,7 @@ body {
 #game-canvas {
   width: min(96vw, 820px); aspect-ratio: 4 / 3; height: auto;
   image-rendering: -webkit-optimize-contrast; image-rendering: pixelated; image-rendering: crisp-edges;
-  background: #0a1a12; border: 3px solid #123b2a; border-radius: 12px;
+  background: #0a1a12; border: 3px solid #123b2a; border-radius: 0; /* no radius on canvas: browsers clip bitmap content */
   box-shadow: 0 12px 34px rgba(0,0,0,.55), inset 0 0 0 2px rgba(92,242,255,.1); touch-action: none;
 }
 
@@ -142,4 +143,112 @@ body {
   padding: 5px 12px; font-size: 12px; font-weight: 700; pointer-events: none; white-space: nowrap; }
 @media (pointer: coarse) and (orientation: portrait) and (max-width: 560px) {
   .pq-rotate { display: block; }
+}
+
+/* ===========================================================================
+ *  Controllo oculare — UI consenso, cursore, dwell, calibrazione
+ * ======================================================================== */
+.eco-eye-toggle {
+  flex: 0 0 auto; min-width: 0; cursor: pointer; font-family: inherit;
+  background: rgba(22,36,28,.92); border: 2px solid rgba(92,242,255,.45); border-radius: 10px;
+  padding: 7px 10px; color: var(--lens); font-size: 12px; font-weight: 800;
+  box-shadow: 0 0 14px rgba(92,242,255,.12); display: flex; flex-direction: column; gap: 2px;
+  -webkit-appearance: none; appearance: none;
+}
+.eco-eye-toggle:hover { background: rgba(92,242,255,.12); }
+.eco-eye-toggle .eco-eye-toggle-lab { text-transform: uppercase; letter-spacing: .4px; font-size: 11px; color: var(--muted); }
+.eco-eye-toggle.eco-eye-on { border-color: var(--green); color: var(--green); }
+.eco-eye-toggle.eco-eye-on .eco-eye-toggle-lab { color: var(--green); }
+
+.eco-eye-modal {
+  position: fixed; inset: 0; z-index: 200; display: flex; align-items: center; justify-content: center;
+  background: rgba(6,15,10,.78); padding: 18px;
+}
+.eco-eye-modal[hidden] { display: none !important; }
+.eco-eye-panel {
+  max-width: 440px; width: 100%; background: rgba(22,36,28,.98); border: 3px solid var(--lens);
+  border-radius: 14px; padding: 20px 22px; box-shadow: 0 0 34px rgba(92,242,255,.22); text-align: left;
+}
+.eco-eye-panel h2 { margin: 0 0 10px; color: var(--lens); font-size: 1.25rem; }
+.eco-eye-panel p { color: var(--muted); line-height: 1.45; margin: 8px 0; font-size: 13.5px; }
+.eco-eye-panel p b { color: var(--ink); }
+.eco-eye-privacy { border-left: 3px solid var(--green); padding-left: 10px; background: rgba(47,191,99,.08); border-radius: 0 8px 8px 0; }
+.eco-eye-warn { color: #ffd54a !important; }
+.eco-eye-warn code { color: var(--lens); font-size: 12px; }
+.eco-eye-actions { display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
+.eco-eye-btn {
+  border: 2px solid rgba(85,239,196,.4); background: rgba(22,36,28,.92); color: var(--ink);
+  font-family: inherit; font-weight: 800; font-size: 14px; padding: 10px 16px; border-radius: 10px; cursor: pointer;
+}
+.eco-eye-btn--ok { background: var(--green-dark); color: #07120f; border-color: transparent; box-shadow: 0 4px 0 #007f68; }
+.eco-eye-btn--ok:active { transform: translateY(3px); box-shadow: 0 0 0 #007f68; }
+
+.eco-eye-cursor {
+  position: fixed; left: 0; top: 0; width: 18px; height: 18px; border-radius: 50%;
+  border: 2px solid #5cf2ff; background: rgba(92,242,255,.25); box-shadow: 0 0 12px rgba(92,242,255,.6);
+  pointer-events: none; z-index: 180; will-change: transform;
+}
+.eco-eye-cursor[hidden] { display: none !important; }
+.eco-eye-cursor::after {
+  content: ''; position: absolute; left: 50%; top: 50%; width: 4px; height: 4px; margin: -2px 0 0 -2px;
+  border-radius: 50%; background: #fff;
+}
+
+.eco-eye-dwells {
+  position: fixed; right: calc(env(safe-area-inset-right) + 14px); top: 50%; transform: translateY(-50%);
+  display: flex; flex-direction: column; gap: 14px; z-index: 160; pointer-events: auto;
+}
+.eco-eye-dwells[hidden] { display: none !important; }
+.eco-eye-dwell {
+  position: relative; width: 72px; height: 72px; border-radius: 50%; border: 2px solid rgba(92,242,255,.55);
+  background: rgba(22,36,28,.92); color: var(--lens); font-family: inherit; font-weight: 800; font-size: 11px;
+  display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0;
+  box-shadow: 0 0 16px rgba(92,242,255,.2);
+}
+.eco-eye-dwell span { position: relative; z-index: 1; text-align: center; line-height: 1.15; max-width: 56px; }
+.eco-eye-dwell--hot { background: rgba(47,191,99,.45); border-color: var(--green); color: var(--green); }
+.eco-eye-ring { position: absolute; inset: 2px; width: calc(100% - 4px); height: calc(100% - 4px); transform: rotate(-90deg); pointer-events: none; }
+.eco-eye-ring-bg { fill: none; stroke: rgba(255,255,255,.12); stroke-width: 3; }
+.eco-eye-ring-fg { fill: none; stroke: var(--lens); stroke-width: 3; stroke-linecap: round; stroke-dasharray: 94.2; stroke-dashoffset: 94.2; transition: stroke-dashoffset .05s linear; }
+
+.eco-eye-cal {
+  position: fixed; inset: 0; z-index: 190; background: rgba(6,15,10,.55); pointer-events: none;
+}
+.eco-eye-cal[hidden] { display: none !important; }
+.eco-eye-cal-msg {
+  position: absolute; top: 12%; left: 50%; transform: translateX(-50%); margin: 0; padding: 8px 14px;
+  background: rgba(22,36,28,.92); border: 1px solid rgba(92,242,255,.4); border-radius: 999px;
+  color: var(--lens); font-size: 13px; font-weight: 700; white-space: nowrap; max-width: 92vw; overflow: hidden; text-overflow: ellipsis;
+}
+.eco-eye-cal-dot {
+  position: absolute; width: 28px; height: 28px; margin: -14px 0 0 -14px; border-radius: 50%;
+  background: var(--green); box-shadow: 0 0 0 4px rgba(47,191,99, calc(var(--eco-cal-p, 0) * .55)), 0 0 18px rgba(47,191,99,.7);
+  left: 50%; top: 50%;
+}
+.eco-eye-cal-skip {
+  position: absolute; bottom: 10%; left: 50%; transform: translateX(-50%); pointer-events: auto;
+}
+
+.eco-eye-toast {
+  position: fixed; left: 50%; bottom: calc(env(safe-area-inset-bottom) + 18px); transform: translateX(-50%);
+  z-index: 210; max-width: min(92vw, 420px); padding: 10px 14px; border-radius: 10px;
+  background: rgba(22,36,28,.96); border: 2px solid rgba(85,239,196,.45); color: var(--ink);
+  font-size: 13px; font-weight: 700; text-align: center; box-shadow: 0 8px 24px rgba(0,0,0,.4);
+}
+.eco-eye-toast[hidden] { display: none !important; }
+
+@media (pointer: coarse) {
+  .eco-eye-dwells { right: calc(env(safe-area-inset-right) + 8px); }
+  .eco-eye-dwell { width: 64px; height: 64px; font-size: 10px; }
+}
+
+.eco-eye-hint {
+  position: fixed; left: 50%; bottom: calc(env(safe-area-inset-bottom) + 64px); transform: translateX(-50%);
+  z-index: 155; padding: 7px 14px; border-radius: 999px; pointer-events: none;
+  background: rgba(22,36,28,.92); border: 1px solid rgba(92,242,255,.45); color: var(--lens);
+  font-size: 12.5px; font-weight: 800; white-space: nowrap; box-shadow: 0 4px 16px rgba(0,0,0,.35);
+}
+.eco-eye-hint[hidden] { display: none !important; }
+.eco-eye-cursor--vac {
+  border-color: var(--green); background: rgba(47,191,99,.35); box-shadow: 0 0 14px rgba(47,191,99,.7);
 }

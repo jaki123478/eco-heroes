@@ -23,6 +23,21 @@ window.EcoVoice = (function () {
   var VOICES_DIR = 'assets/voices/';
   var MANIFEST_URL = VOICES_DIR + 'manifest.json';
 
+  // Last-resort copy of assets/voices/manifest.json (and voices-manifest.js).
+  // Used if the <script> tag was omitted / reordered, or fetch fails on file://.
+  var DEFAULT_MANIFEST = {
+  "ECO_ENGINEER|i rifiuti si sono fusi insieme... qualcosa si muove la in fondo!": "62dbee456991db11.mp3",
+  "SCRAP_GOLEM|grrr... inquinamento... per sempre!": "2815d17eab7842c5.mp3",
+  "ECO_ENGINEER|e lo scrap golem! mira il fascio al suo nucleo viola. forza!": "5461500b8a70ea64.mp3",
+  "SCRAP_GOLEM|non mi fermerai, scavenger!": "3c29b14402cfea14.mp3",
+  "TECH_SCAVENGER|la citta torna a respirare. ora!": "c9532726bdb38a7d.mp3",
+  "ECO_ENGINEER|dagli dentro, eroe! ultimo sforzo!": "07c7fa2537ac5d17.mp3",
+  "ECO_ENGINEER|la citta soffoca sotto lo smog tossico!": "e4ba335df777a0dd.mp3",
+  "ECO_ENGINEER|tu sei il tech-scavenger: lo zaino aspira rifiuti e inquinamento.": "2875d32e7ea9c735.mp3",
+  "ECO_ENGINEER|il recycler bot ti seguira e dara una mano.": "55060b1a98cfd3d3.mp3",
+  "ECO_ENGINEER|premi spazio (o il tasto tondo) per aspirare. riporta il verde!": "3ad0fb5fe5e48c96.mp3",
+  "TECH_SCAVENGER|pronto a ripulire la citta. andiamo!": "be66de222eebda0c.mp3"
+};
   // Profili per il FALLBACK Web Speech (timbro approssimato via rate/pitch).
   var FALLBACK = {
     ECO_ENGINEER:   { rate: 0.98, pitch: 1.18 },
@@ -64,12 +79,24 @@ window.EcoVoice = (function () {
     return Math.max(1200, words * 360);
   }
 
-  // Carica (una volta) il manifest delle voci pre-generate. Errore → {} → fallback.
+  // Carica (una volta) il manifest delle voci pre-generate.
+  // Su file:// Chrome blocca fetch -> usa ECO_VOICE_MANIFEST / DEFAULT_MANIFEST.
+  // Su http(s) prova fetch (production puo aggiornare solo manifest.json),
+  // e in caso di errore ricade sull'embedded.
   function loadManifest() {
     if (!manifestPromise) {
-      manifestPromise = fetch(MANIFEST_URL, { cache: 'force-cache' })
-        .then(function (r) { return r.ok ? r.json() : {}; })
-        .catch(function () { return {}; });
+      var embedded =
+        (typeof window !== 'undefined' && window.ECO_VOICE_MANIFEST && typeof window.ECO_VOICE_MANIFEST === 'object')
+          ? window.ECO_VOICE_MANIFEST
+          : DEFAULT_MANIFEST;
+      var isFile = (typeof location !== 'undefined' && location.protocol === 'file:');
+      if (isFile) {
+        manifestPromise = Promise.resolve(embedded || {});
+      } else {
+        manifestPromise = fetch(MANIFEST_URL, { cache: 'force-cache' })
+          .then(function (r) { return r.ok ? r.json() : (embedded || {}); })
+          .catch(function () { return embedded || {}; });
+      }
     }
     return manifestPromise;
   }
