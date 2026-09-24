@@ -1203,31 +1203,32 @@
   function drawSmog(s) { const pulse = 1 + Math.sin(s.t * 6) * 0.07, w = s.w * pulse, h = s.h * pulse, x = s.x + (s.w - w) / 2, y = s.y + (s.h - h) / 2; ctx.fillStyle = C.gooGlow; ctx.fillRect(s.x - 2, s.y - 2, s.w + 4, s.h + 4); if (ready('smog')) { ctx.drawImage(sprites.smog.img, x - 4, y - 5, w + 8, h + 8); return; } ctx.fillStyle = C.shadow; ctx.fillRect(s.x + 3, s.y + s.h - 2, s.w - 6, 3); ctx.fillStyle = C.smogLo; ctx.fillRect(x + 2, y + 6, w - 4, h - 8); ctx.fillRect(x + 6, y + 2, w - 12, h - 4); ctx.fillStyle = C.smog; ctx.fillRect(x + 4, y + 5, w - 10, h - 9); ctx.fillStyle = C.smogHi; ctx.fillRect(x + 6, y + 6, 5, 3); ctx.fillStyle = C.smogEye; ctx.fillRect(x + 7, y + 10, 4, 4); ctx.fillRect(x + w - 11, y + 10, 4, 4); ctx.fillStyle = C.ink; ctx.fillRect(x + 8, y + 11, 2, 2); ctx.fillRect(x + w - 10, y + 11, 2, 2); }
   function drawBoss(time) {
     const b = game.boss; if (!b || b.dead) return;
-    // Golem VIVO: camminata A TERRA (squash/stomp a piedi piatti, niente hop/salto), lean,
+    // Golem VIVO: FLAT_WALK_v133 — Y costante (zero bob), squash solo orizzontale, lean,
     // anticipazione/impatto attacchi, tremolio metallico) + nucleo viola pulsante.
     // Mai "faccia"/dettagli disegnati sopra l'arte: solo trasformazioni e luce additiva.
     const baseX = b.x + b.w / 2, baseY = b.y + b.h;
     const mv = b.mv || 0, ph = b.walk || 0, cast = Math.max(0, b.cast || 0), face = b.face || 1;
     const hitK = b.hit > 0 ? Math.min(1, b.hit / 0.1) : 0;
-    // Camminata A TERRA: squash/stretch sul passo, senza hop/salto (i piedi restano sul pavimento).
+    // FLAT_WALK_v133: Y costante sul suolo — zero bob/lift/hop verticale in camminata.
+    // Solo micro-squash ORIZZONTALE sul passo (i piedi restano piantati; niente sy oscillante).
     const step = Math.abs(Math.sin(ph));                                        // 0..1 ciclo passo
-    const plant = step * step;                                                  // peso sul piede a terra (più "pesante" del lift aereo)
-    let sx = 1 + plant * 0.05 * mv + cast * 0.10;                                // si allarga quando pesta
-    let sy = 1 - plant * 0.06 * mv + cast * 0.06 + (1 - mv) * Math.sin(b.t * 2) * 0.012; // si schiaccia a terra + respiro
-    let rot = 0;                                                                // NIENTE rotazione: un golem di metallo non ondeggia/dondola
-    let bob = -step * 1.2 * mv - cast * 0.5 - hitK * 1;                         // bob walk minimo (~1px); niente salto evidente
-    let dxs = -face * hitK * 3;                                                 // solo rinculo al colpo (niente sway laterale, niente tremolio)
-    // anticipazione/impatto degli attacchi — deformazioni a terra (niente sollevamento in aria)
+    const plant = step * step;                                                  // peso sul piede a terra
+    let sx = 1 + plant * 0.04 * mv + cast * 0.08;                                // allarga leggermente quando pesta
+    let sy = 1 + cast * 0.04 + (1 - mv) * Math.sin(b.t * 2) * 0.008;             // no squash verticale in walk; respiro idle minimo
+    let rot = 0;                                                                // NIENTE rotazione
+    let bob = 0;                                                                // FLAT_WALK_v133: mai sollevare lo sprite
+    let dxs = -face * hitK * 3;                                                 // solo rinculo orizzontale al colpo
+    // smash/sludge: solo scale a terra (nessun bob/lift)
     if (b.atk === 'smash') {
       const wu = Math.min(1, b.atkT / 0.46), hh = Math.max(0, 1 - (b.atkT - 0.46) / 0.28);
-      if (b.atkT < 0.46) { sy += 0.08 * wu; sx -= 0.04 * wu; }                   // carica: si erge sul posto (scale only)
-      else { sy -= 0.16 * hh; sx += 0.13 * hh; bob += 1.5 * hh; }                 // SMASH: schiaccia a terra
+      if (b.atkT < 0.46) { sy += 0.06 * wu; sx -= 0.03 * wu; }                   // windup: scale only
+      else { sy -= 0.14 * hh; sx += 0.12 * hh; }                                 // impatto: schiaccia a terra, Y fissa
     } else if (b.atk === 'sludge') {
       const wu = Math.sin(Math.min(1, b.atkT / 0.38) * Math.PI);
-      sx += 0.05 * wu; sy += 0.04 * wu;                                            // gonfia (niente rotazione)
+      sx += 0.05 * wu; sy += 0.03 * wu;
     }
 
-    // ombra ai piedi (stabile a terra — non si restringe come in un salto)
+    // ombra fissa sotto i piedi (allineata allo sprite, mai staccata)
     const shW = b.w - 8;
     ctx.fillStyle = C.shadow; ctx.fillRect(baseX - shW / 2, baseY - 3, shW, 5);
 
