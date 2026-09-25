@@ -166,16 +166,11 @@
     if (keys.ArrowRight || keys.KeyD || vdir.right) x += 1;
     if (keys.ArrowUp || keys.KeyW || vdir.up) y -= 1;
     if (keys.ArrowDown || keys.KeyS || vdir.down) y += 1;
-    // Controllo oculare: se attivo e c'e sguardo fuori dead-zone, ha priorita sul movimento
-    if (window.EcoEye && EcoEye.isActive && EcoEye.isActive()) {
-      const ea = EcoEye.getAxis();
-      if (ea && (ea.x || ea.y)) { x = ea.x; y = ea.y; }
-    }
     if (x && y && Math.abs(x) === 1 && Math.abs(y) === 1) { x *= Math.SQRT1_2; y *= Math.SQRT1_2; }
     return { x, y };
   }
-  const vacuumDown = () => (keys.Space || keys.KeyK || touchVacuum || (window.EcoEye && EcoEye.isActive && EcoEye.isActive() && EcoEye.isVacuum())); // eyeControl v2: wink destro hold
-  const takeConfirm = () => { const c = confirmPressed || (window.EcoEye && EcoEye.takeConfirm && EcoEye.takeConfirm()); confirmPressed = false; return !!c; };
+  const vacuumDown = () => (keys.Space || keys.KeyK || touchVacuum);
+  const takeConfirm = () => { const c = confirmPressed; confirmPressed = false; return !!c; };
 
   // =========================================================================
   //  STATO
@@ -1756,17 +1751,6 @@
   function frame(t) {
     requestAnimationFrame(frame);
     if (paused) { last = t; return; }
-    // Feed contesto al controllo oculare (solo coordinate schermo / stato — mai face data)
-    if (window.EcoEye && EcoEye.provideContext) {
-      const r = canvas.getBoundingClientRect();
-      const sx = r.width / CONFIG.WIDTH, sy = r.height / CONFIG.HEIGHT;
-      EcoEye.provideContext({
-        state: game.state,
-        playerCssX: r.left + (game.player.x + game.player.w * 0.5) * sx,
-        playerCssY: r.top + (game.player.y + game.player.h * 0.5) * sy,
-        canvasRect: r,
-      });
-    }
     const dtReal = Math.min(0.033, (t - last) / 1000) || 0; last = t; titleT += dtReal;
     let dt = dtReal;
     if (game.hitStop > 0) { game.hitStop -= dtReal; dt = 0; }   // HIT-STOP: congela la simulazione, continua a disegnare
